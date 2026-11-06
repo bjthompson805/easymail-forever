@@ -1,4 +1,4 @@
-## Interface: 11508, 20505, 50503, 120001
+## Interface: 11508, 16001, 20505, 50503, 120001
 ## Title: EasyMail
 ## Author: Yarko
 ## Version: 5.2.1

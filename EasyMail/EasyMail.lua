@@ -20,6 +20,44 @@ EasyMail.isClassic = (WOW_PROJECT_ID == WOW_PROJECT_CLASSIC);
 EasyMail.isMists = (WOW_PROJECT_ID == WOW_PROJECT_MISTS_CLASSIC);
 EasyMail.isRetail = (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE);
 
+-- WoW Forever uses the Mainline UI, but its mail frame moved several global functions onto mixin methods
+EasyMail.isForever = (InboxFrame_Update == nil and InboxFrame and InboxFrame.Update ~= nil);
+EasyMail.isRetail = EasyMail.isRetail or EasyMail.isForever;
+
+-- Mail frame compatibility wrappers
+function EasyMail.InboxFrameUpdate()
+    if (InboxFrame_Update) then
+        InboxFrame_Update();
+    else
+        InboxFrame:Update();
+    end
+end
+
+function EasyMail.OpenMailUpdate()
+    if (OpenMail_Update) then
+        OpenMail_Update();
+    else
+        OpenMailFrame:Update();
+    end
+end
+
+function EasyMail.OpenMailDelete()
+    if (OpenMail_Delete) then
+        OpenMail_Delete();
+    else
+        OpenMailFrame.DeleteButton:Delete();
+    end
+end
+
+-- Hook a global mail function, or the equivalent mixin method on clients that have one
+function EasyMail.HookMailFunc(globalName, frame, method, func)
+    if (_G[globalName]) then
+        hooksecurefunc(globalName, func);
+    else
+        hooksecurefunc(frame, method, func);
+    end
+end
+
 -- List length default and constraints
 EasyMail.minListLen = 8;
 EasyMail.maxListLen = 40;
@@ -90,7 +128,11 @@ StaticPopupDialogs["EASYMAIL_ADDNAME"] = {
         self:GetEditBox():SetFocus();
     end,
     OnHide = function(self)
-        ChatEdit_FocusActiveWindow();
+        if (ChatFrameUtil and ChatFrameUtil.FocusActiveWindow) then
+            ChatFrameUtil.FocusActiveWindow();
+        else
+            ChatEdit_FocusActiveWindow();
+        end
         self:GetEditBox():SetText("");
     end,
     timeout = 0,
@@ -353,7 +395,7 @@ function EasyMail.OnEvent(self, event, ...)
 
         -- Hook to the redraw function for the open mail to move the attachments down a bit to make room for the 
         -- Take All button
-        hooksecurefunc("OpenMail_Update", EasyMail.AdjustAtt);
+        EasyMail.HookMailFunc("OpenMail_Update", OpenMailFrame, "Update", EasyMail.AdjustAtt);
 
         -- Replace inbox onclick to cancel Take All if user changes open emails and to handle right-click
         for t = 1, INBOXITEMS_TO_DISPLAY do
@@ -364,11 +406,11 @@ function EasyMail.OnEvent(self, event, ...)
         EasyMail_AttButton:SetParent(OpenMailFrame);
 
         -- Hook the inbox update function to draw the checkboxes
-        hooksecurefunc("InboxFrame_Update", EasyMail.InboxUpdate);
+        EasyMail.HookMailFunc("InboxFrame_Update", InboxFrame, "Update", EasyMail.InboxUpdate);
 
         -- Hook the prev and next buttons to reset the Mark Page button
-        InboxPrevPageButton:HookScript("OnClick", EasyMail.ResetMarkPage);
-        InboxNextPageButton:HookScript("OnClick", EasyMail.ResetMarkPage);
+        (InboxPrevPageButton or InboxFrame.PrevPageButton):HookScript("OnClick", EasyMail.ResetMarkPage);
+        (InboxNextPageButton or InboxFrame.NextPageButton):HookScript("OnClick", EasyMail.ResetMarkPage);
 
         -- Save settings for default inbox
         _, _, _, mailItemX, mailItemY = MailItem1:GetPoint(1);
@@ -383,7 +425,7 @@ function EasyMail.OnEvent(self, event, ...)
         MailFrame:HookScript("OnHide", EasyMail.StopGetAll);
 
         -- Hook the mail frame show function to reset the Mark All button
-        MailFrame:SetScript("OnShow", EasyMail.ResetMarkAll);
+        MailFrame:HookScript("OnShow", EasyMail.ResetMarkAll);
 
         -- Hook the take money function to display money received
         OpenMailMoneyButton:HookScript("OnClick", function()
@@ -549,7 +591,7 @@ function EasyMail.OnEvent(self, event, ...)
             if (gettingAtt) then
                 -- Take all probably completed, uncheck the checkbox
                 checkBoxes[curMail] = false;
-                InboxFrame_Update();
+                EasyMail.InboxFrameUpdate();
             end
 
             gettingAtt = false;
@@ -1134,7 +1176,7 @@ end
 -- Move the attachments down to make room for the Take All button
 ---------------------------------------------------
 function EasyMail.AdjustAtt()
-    if (not InboxFrame.openMailID) then
+    if (not InboxFrame.openMailID or InboxFrame.openMailID < 1 or InboxFrame.openMailID > GetInboxNumItems()) then
         return;
     end
 
@@ -1325,7 +1367,7 @@ function EasyMail.OnUpdate(self, elapsed)
                 if (attIndex > ATTACHMENTS_MAX and gettingAtt) then
                     -- Completed take all successully, uncheck the checkbox
                     checkBoxes[curMail] = false;
-                    InboxFrame_Update();
+                    EasyMail.InboxFrameUpdate();
                 end
 
                 gettingAtt = false;
@@ -1349,18 +1391,18 @@ function EasyMail.OnUpdate(self, elapsed)
                 (not pending or EasyMail_SavedVars.DelPending == "Y")) then
                 -- Page the inbox to the correct page
                 InboxFrame.pageNum = floor((curMail - 1) / INBOXITEMS_TO_DISPLAY) + 1;
-                InboxFrame_Update();
+                EasyMail.InboxFrameUpdate();
 
                 -- Actually open the mail
                 _G["MailItem" .. (((curMail - 1) % INBOXITEMS_TO_DISPLAY) + 1) .. "Button"]:Click("LeftButton");
 
                 if (pending) then
-                    OpenMail_Delete();
+                    EasyMail.OpenMailDelete();
                     deleteCount = GetInboxNumItems();
                 end
             else
                 checkBoxes[curMail] = false;
-                InboxFrame_Update();
+                EasyMail.InboxFrameUpdate();
             end
         else
             -- Done processing mails
@@ -1522,15 +1564,19 @@ function EasyMail.OpenMail(index)
 
     InboxFrame.openMailID = index;
     OpenMailFrame.updateButtonPositions = true;
-    OpenMail_Update();
+    EasyMail.OpenMailUpdate();
     -- OpenMailFrame:Show();
     ShowUIPanel(OpenMailFrame);
+
+    if (EasyMail.isForever) then
+        OpenMailFrameInset:SetPoint("TOPLEFT", 4, -80);
+    end
 
     if (not isShown) then
         PlaySound(SOUNDKIT.IG_SPELLBOOK_OPEN);
     end
 
-    InboxFrame_Update();
+    EasyMail.InboxFrameUpdate();
 end
 
 ---------------------------------------------------
@@ -1539,7 +1585,7 @@ end
 ---------------------------------------------------
 function EasyMail.ClickDelete()
     EasyMail.OpenMail(deleteMail);
-    OpenMail_Delete();
+    EasyMail.OpenMailDelete();
 end
 
 ---------------------------------------------------
