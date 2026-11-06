@@ -1,0 +1,706 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
+..\..\FrameXML\UI.xsd">
+
+	<!-- Options panel -->
+	<Frame name="EasyMail_OptionsPanel" hidden="false">
+		<Layers>
+			<Layer level="ARTWORK">
+				<FontString name="$parentTitle" text="EASYMAIL_ADDONNAME" inherits="GameFontNormalLarge" justifyH="LEFT" justifyV="TOP">
+					<Anchors>
+						<Anchor point="TOPLEFT">
+							<Offset>
+								<AbsDimension x="16" y="-16"/>
+							</Offset>
+						</Anchor>
+					</Anchors>
+				</FontString>
+			</Layer>
+		</Layers>
+		<Scripts>
+			<OnLoad>
+				self.name = EASYMAIL_ADDONNAME;
+        self.OnCommit = EasyMail.OptionsOkay
+        --self.OnDefault = EasyMail.OptionsDefault
+        self.OnRefresh = EasyMail.OptionsRefresh
+			</OnLoad>
+		</Scripts>
+		<Frames>
+      <Button name="$parentDefaultsButton" inherits="UIPanelButtonTemplate" text="SETTINGS_DEFAULTS">
+        <Size x="96" y="22"/>
+        <Anchors>
+          <Anchor point="TOPRIGHT" x="-36" y="-16"/>
+        </Anchors>
+        <Scripts>
+          <OnClick>
+            StaticPopup_ShowGenericConfirmation(EASYMAIL_CONFIG_DEFAULTEXT,
+              function()
+                StaticPopup_Hide("GENERIC_CONFIRMATION")
+                EasyMail.OptionsDefault()
+              end)
+          </OnClick>
+        </Scripts>
+      </Button>
+			<CheckButton name="$parentAutoAdd" inherits="UICheckButtonTemplate">
+		        <Size>
+			        <AbsDimension x="26" y="26"/>
+		        </Size>
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="$parentTitle" relativePoint="BOTTOMLEFT">
+						<Offset>
+							<AbsDimension x="-2" y="-16"/>
+						</Offset>
+					</Anchor>
+				</Anchors>
+				<Layers>
+					<Layer level="ARTWORK">
+						<FontString name="$parentText" text="EASYMAIL_CONFIG_AUTOADD" inherits="GameFontHighlight">
+							<Anchors>
+								<Anchor point="LEFT" relativePoint="RIGHT">
+									<Offset>
+										<AbsDimension x="0" y="1"/>
+									</Offset>
+								</Anchor>
+							</Anchors>
+						</FontString>
+					</Layer>
+				</Layers>
+				<Scripts>
+					<OnEnter>
+						GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
+						GameTooltip:SetText(EASYMAIL_AUTOADDHELPMSG, nil, nil, nil, nil, 1);
+					</OnEnter>
+					<OnLeave>
+						GameTooltip:Hide();
+					</OnLeave>
+				</Scripts>
+			</CheckButton>
+			<EditBox name="$parentListLen" autoFocus="false" inherits="InputBoxTemplate" numeric="true" letters="2">
+				<Size>
+					<AbsDimension x="52" y="16"/>
+				</Size>
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="$parentAutoAdd" relativePoint="BOTTOMLEFT">
+						<Offset>
+							<AbsDimension x="9" y="-23"/>
+						</Offset>
+					</Anchor>
+				</Anchors>
+				<Layers>
+					<Layer level="ARTWORK">
+						<FontString name="$parentText" text="" inherits="GameFontHighlight">
+							<Anchors>
+								<Anchor point="BOTTOMLEFT" relativePoint="TOPLEFT">
+									<Offset>
+										<AbsDimension x="-4" y="4"/>
+									</Offset>
+								</Anchor>
+							</Anchors>
+						</FontString>
+					</Layer>
+				</Layers>
+				<Scripts>
+					<OnLoad>
+						EasyMail_OptionsPanelListLenText:SetText(format(EASYMAIL_CONFIG_MAXLEN, EasyMail.minListLen, EasyMail.maxListLen));
+					</OnLoad>
+					<OnEnter>
+						GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
+						GameTooltip:SetText(EASYMAIL_MAXLENHELPMSG, nil, nil, nil, nil, 1);
+					</OnEnter>
+					<OnLeave>
+						GameTooltip:Hide();
+					</OnLeave>
+				</Scripts>
+				<FontString inherits="ChatFontNormal"/>
+			</EditBox>
+			<Button name="$parentClear" inherits="UIPanelButtonTemplate" text="EASYMAIL_CONFIG_CLEARLISTBTNTEXT">
+				<Size>
+					<AbsDimension x="96" y="22"/>
+				</Size>
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="$parentListLen" relativePoint="BOTTOMLEFT">
+						<Offset>
+							<AbsDimension x="-7" y="-25"/>
+						</Offset>
+					</Anchor>
+				</Anchors>
+				<Layers>
+					<Layer level="ARTWORK">
+						<FontString name="$parentText" text="EASYMAIL_CONFIG_CLEARLIST" inherits="GameFontHighlight">
+							<Anchors>
+								<Anchor point="BOTTOMLEFT" relativePoint="TOPLEFT">
+									<Offset>
+										<AbsDimension x="2" y="2"/>
+									</Offset>
+								</Anchor>
+							</Anchors>
+						</FontString>
+					</Layer>
+				</Layers>
+				<Scripts>
+					<OnClick>
+                  PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON);
+						EasyMail.clearAll = true;
+					</OnClick>
+					<OnEnter>
+						GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
+						GameTooltip:SetText(EASYMAIL_CLEARHELPMSG, nil, nil, nil, nil, 1);
+					</OnEnter>
+					<OnLeave>
+						GameTooltip:Hide();
+					</OnLeave>
+				</Scripts>
+			</Button>
+			<CheckButton name="$parentFriends" inherits="UICheckButtonTemplate">
+		        <Size>
+			        <AbsDimension x="26" y="26"/>
+		        </Size>
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="$parentClear" relativePoint="BOTTOMLEFT">
+						<Offset>
+							<AbsDimension x="-2" y="-11"/>
+						</Offset>
+					</Anchor>
+				</Anchors>
+				<Layers>
+					<Layer level="ARTWORK">
+						<FontString name="$parentText" text="EASYMAIL_CONFIG_FRIENDS" inherits="GameFontHighlight">
+							<Anchors>
+								<Anchor point="LEFT" relativePoint="RIGHT">
+									<Offset>
+										<AbsDimension x="0" y="1"/>
+									</Offset>
+								</Anchor>
+							</Anchors>
+						</FontString>
+					</Layer>
+				</Layers>
+				<Scripts>
+					<OnEnter>
+						GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
+						GameTooltip:SetText(EASYMAIL_FRIENDSHELPMSG, nil, nil, nil, nil, 1);
+					</OnEnter>
+					<OnLeave>
+						GameTooltip:Hide();
+					</OnLeave>
+				</Scripts>
+			</CheckButton>
+			<CheckButton name="$parentGuild" inherits="UICheckButtonTemplate">
+		        <Size>
+			        <AbsDimension x="26" y="26"/>
+		        </Size>
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="$parentFriends" relativePoint="BOTTOMLEFT">
+						<Offset>
+							<AbsDimension x="0" y="0"/>
+						</Offset>
+					</Anchor>
+				</Anchors>
+				<Layers>
+					<Layer level="ARTWORK">
+						<FontString name="$parentText" text="EASYMAIL_CONFIG_GUILD" inherits="GameFontHighlight">
+							<Anchors>
+								<Anchor point="LEFT" relativePoint="RIGHT">
+									<Offset>
+										<AbsDimension x="0" y="1"/>
+									</Offset>
+								</Anchor>
+							</Anchors>
+						</FontString>
+					</Layer>
+				</Layers>
+				<Scripts>
+					<OnEnter>
+						GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
+						GameTooltip:SetText(EASYMAIL_GUILDHELPMSG, nil, nil, nil, nil, 1);
+					</OnEnter>
+					<OnLeave>
+						GameTooltip:Hide();
+					</OnLeave>
+				</Scripts>
+			</CheckButton>
+			<CheckButton name="$parentInclusive" inherits="UICheckButtonTemplate">
+		        <Size>
+			        <AbsDimension x="26" y="26"/>
+		        </Size>
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="$parentGuild" relativePoint="BOTTOMLEFT">
+						<Offset>
+							<AbsDimension x="0" y="0"/>
+						</Offset>
+					</Anchor>
+				</Anchors>
+				<Layers>
+					<Layer level="ARTWORK">
+						<FontString name="$parentText" text="EASYMAIL_CONFIG_INCLUSIVE" inherits="GameFontHighlight">
+							<Anchors>
+								<Anchor point="LEFT" relativePoint="RIGHT">
+									<Offset>
+										<AbsDimension x="0" y="1"/>
+									</Offset>
+								</Anchor>
+							</Anchors>
+						</FontString>
+					</Layer>
+				</Layers>
+				<Scripts>
+					<OnEnter>
+						GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
+						GameTooltip:SetText(EASYMAIL_INCLUSIVEHELPMSG, nil, nil, nil, nil, 1);
+					</OnEnter>
+					<OnLeave>
+						GameTooltip:Hide();
+					</OnLeave>
+				</Scripts>
+			</CheckButton>
+			<CheckButton name="$parentBlizzList" inherits="UICheckButtonTemplate">
+		        <Size>
+			        <AbsDimension x="26" y="26"/>
+		        </Size>
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="$parentInclusive" relativePoint="BOTTOMLEFT">
+						<Offset>
+							<AbsDimension x="0" y="0"/>
+						</Offset>
+					</Anchor>
+				</Anchors>
+				<Layers>
+					<Layer level="ARTWORK">
+						<FontString name="$parentText" text="EASYMAIL_CONFIG_BLIZZLIST" inherits="GameFontHighlight">
+							<Anchors>
+								<Anchor point="LEFT" relativePoint="RIGHT">
+									<Offset>
+										<AbsDimension x="0" y="1"/>
+									</Offset>
+								</Anchor>
+							</Anchors>
+						</FontString>
+					</Layer>
+				</Layers>
+				<Scripts>
+					<OnEnter>
+						GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
+						GameTooltip:SetText(EASYMAIL_BLIZZLISTHELPMSG, nil, nil, nil, nil, 1);
+					</OnEnter>
+					<OnLeave>
+						GameTooltip:Hide();
+					</OnLeave>
+				</Scripts>
+			</CheckButton>
+			<CheckButton name="$parentHideDrop" inherits="UICheckButtonTemplate">
+		        <Size>
+			        <AbsDimension x="26" y="26"/>
+		        </Size>
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="$parentBlizzList" relativePoint="BOTTOMLEFT">
+						<Offset>
+							<AbsDimension x="0" y="0"/>
+						</Offset>
+					</Anchor>
+				</Anchors>
+				<Layers>
+					<Layer level="ARTWORK">
+						<FontString name="$parentText" text="EASYMAIL_CONFIG_HIDEDROP" inherits="GameFontHighlight">
+							<Anchors>
+								<Anchor point="LEFT" relativePoint="RIGHT">
+									<Offset>
+										<AbsDimension x="0" y="1"/>
+									</Offset>
+								</Anchor>
+							</Anchors>
+						</FontString>
+					</Layer>
+				</Layers>
+				<Scripts>
+					<OnEnter>
+						GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
+						GameTooltip:SetText(EASYMAIL_HIDEDROPHELPMSG, nil, nil, nil, nil, 1);
+					</OnEnter>
+					<OnLeave>
+						GameTooltip:Hide();
+					</OnLeave>
+				</Scripts>
+			</CheckButton>
+			<CheckButton name="$parentOpenAll" inherits="UICheckButtonTemplate">
+		        <Size>
+			        <AbsDimension x="26" y="26"/>
+		        </Size>
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="$parentHideDrop" relativePoint="BOTTOMLEFT">
+						<Offset>
+							<AbsDimension x="0" y="0"/>
+						</Offset>
+					</Anchor>
+				</Anchors>
+				<Layers>
+					<Layer level="ARTWORK">
+						<FontString name="$parentText" text="EASYMAIL_CONFIG_OPENALL" inherits="GameFontHighlight">
+							<Anchors>
+								<Anchor point="LEFT" relativePoint="RIGHT">
+									<Offset>
+										<AbsDimension x="0" y="1"/>
+									</Offset>
+								</Anchor>
+							</Anchors>
+						</FontString>
+					</Layer>
+				</Layers>
+				<Scripts>
+					<OnEnter>
+						GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
+						GameTooltip:SetText(EASYMAIL_OPENALLHELPMSG, nil, nil, nil, nil, 1);
+					</OnEnter>
+					<OnLeave>
+						GameTooltip:Hide();
+					</OnLeave>
+				</Scripts>
+			</CheckButton>
+			<CheckButton name="$parentClickGet" inherits="UICheckButtonTemplate">
+		        <Size>
+			        <AbsDimension x="26" y="26"/>
+		        </Size>
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="$parentOpenAll" relativePoint="BOTTOMLEFT">
+						<Offset>
+							<AbsDimension x="0" y="0"/>
+						</Offset>
+					</Anchor>
+				</Anchors>
+				<Layers>
+					<Layer level="ARTWORK">
+						<FontString name="$parentText" text="EASYMAIL_CONFIG_CLICKGET" inherits="GameFontHighlight">
+							<Anchors>
+								<Anchor point="LEFT" relativePoint="RIGHT">
+									<Offset>
+										<AbsDimension x="0" y="1"/>
+									</Offset>
+								</Anchor>
+							</Anchors>
+						</FontString>
+					</Layer>
+				</Layers>
+				<Scripts>
+					<OnEnter>
+						GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
+						GameTooltip:SetText(EASYMAIL_CLICKGETHELPMSG, nil, nil, nil, nil, 1);
+					</OnEnter>
+					<OnLeave>
+						GameTooltip:Hide();
+					</OnLeave>
+				</Scripts>
+			</CheckButton>
+			<CheckButton name="$parentClickDel" inherits="UICheckButtonTemplate">
+		        <Size>
+			        <AbsDimension x="26" y="26"/>
+		        </Size>
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="$parentClickGet" relativePoint="BOTTOMLEFT">
+						<Offset>
+							<AbsDimension x="0" y="0"/>
+						</Offset>
+					</Anchor>
+				</Anchors>
+				<Layers>
+					<Layer level="ARTWORK">
+						<FontString name="$parentText" text="EASYMAIL_CONFIG_CLICKDEL" inherits="GameFontHighlight">
+							<Anchors>
+								<Anchor point="LEFT" relativePoint="RIGHT">
+									<Offset>
+										<AbsDimension x="0" y="1"/>
+									</Offset>
+								</Anchor>
+							</Anchors>
+						</FontString>
+					</Layer>
+				</Layers>
+				<Scripts>
+					<OnEnter>
+						GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
+						GameTooltip:SetText(EASYMAIL_CLICKDELHELPMSG, nil, nil, nil, nil, 1);
+					</OnEnter>
+					<OnLeave>
+						GameTooltip:Hide();
+					</OnLeave>
+				</Scripts>
+			</CheckButton>
+			<CheckButton name="$parentDelPrompt" inherits="UICheckButtonTemplate">
+		        <Size>
+			        <AbsDimension x="26" y="26"/>
+		        </Size>
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="$parentClickDel" relativePoint="BOTTOMLEFT">
+						<Offset>
+							<AbsDimension x="0" y="0"/>
+						</Offset>
+					</Anchor>
+				</Anchors>
+				<Layers>
+					<Layer level="ARTWORK">
+						<FontString name="$parentText" text="EASYMAIL_CONFIG_DELPROMPT" inherits="GameFontHighlight">
+							<Anchors>
+								<Anchor point="LEFT" relativePoint="RIGHT">
+									<Offset>
+										<AbsDimension x="0" y="1"/>
+									</Offset>
+								</Anchor>
+							</Anchors>
+						</FontString>
+					</Layer>
+				</Layers>
+				<Scripts>
+					<OnEnter>
+						GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
+						GameTooltip:SetText(EASYMAIL_DELPROMPTHELPMSG, nil, nil, nil, nil, 1);
+					</OnEnter>
+					<OnLeave>
+						GameTooltip:Hide();
+					</OnLeave>
+				</Scripts>
+			</CheckButton>
+			<CheckButton name="$parentTextTooltip" inherits="UICheckButtonTemplate">
+		        <Size>
+			        <AbsDimension x="26" y="26"/>
+		        </Size>
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="$parentDelPrompt" relativePoint="BOTTOMLEFT">
+						<Offset>
+							<AbsDimension x="0" y="0"/>
+						</Offset>
+					</Anchor>
+				</Anchors>
+				<Layers>
+					<Layer level="ARTWORK">
+						<FontString name="$parentText" text="EASYMAIL_CONFIG_TOOLTIP" inherits="GameFontHighlight">
+							<Anchors>
+								<Anchor point="LEFT" relativePoint="RIGHT">
+									<Offset>
+										<AbsDimension x="0" y="1"/>
+									</Offset>
+								</Anchor>
+							</Anchors>
+						</FontString>
+					</Layer>
+				</Layers>
+				<Scripts>
+					<OnEnter>
+						GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
+						GameTooltip:SetText(EASYMAIL_TOOLTIPHELPMSG, nil, nil, nil, nil, 1);
+					</OnEnter>
+					<OnLeave>
+						GameTooltip:Hide();
+					</OnLeave>
+				</Scripts>
+			</CheckButton>
+			<CheckButton name="$parentDelPending" inherits="UICheckButtonTemplate">
+		        <Size>
+			        <AbsDimension x="26" y="26"/>
+		        </Size>
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="$parentTextTooltip" relativePoint="BOTTOMLEFT">
+						<Offset>
+							<AbsDimension x="0" y="0"/>
+						</Offset>
+					</Anchor>
+				</Anchors>
+				<Layers>
+					<Layer level="ARTWORK">
+						<FontString name="$parentText" text="EASYMAIL_CONFIG_DELPENDING" inherits="GameFontHighlight">
+							<Anchors>
+								<Anchor point="LEFT" relativePoint="RIGHT">
+									<Offset>
+										<AbsDimension x="0" y="1"/>
+									</Offset>
+								</Anchor>
+							</Anchors>
+						</FontString>
+					</Layer>
+				</Layers>
+				<Scripts>
+					<OnEnter>
+						GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
+						GameTooltip:SetText(EASYMAIL_DELPENDINGHELPMSG, nil, nil, nil, nil, 1);
+					</OnEnter>
+					<OnLeave>
+						GameTooltip:Hide();
+					</OnLeave>
+				</Scripts>
+			</CheckButton>
+			<CheckButton name="$parentMoney" inherits="UICheckButtonTemplate">
+		        <Size>
+			        <AbsDimension x="26" y="26"/>
+		        </Size>
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="$parentDelPending" relativePoint="BOTTOMLEFT">
+						<Offset>
+							<AbsDimension x="0" y="0"/>
+						</Offset>
+					</Anchor>
+				</Anchors>
+				<Layers>
+					<Layer level="ARTWORK">
+						<FontString name="$parentText" text="EASYMAIL_CONFIG_MONEY" inherits="GameFontHighlight">
+							<Anchors>
+								<Anchor point="LEFT" relativePoint="RIGHT">
+									<Offset>
+										<AbsDimension x="0" y="1"/>
+									</Offset>
+								</Anchor>
+							</Anchors>
+						</FontString>
+					</Layer>
+				</Layers>
+				<Scripts>
+					<OnEnter>
+						GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
+						GameTooltip:SetText(EASYMAIL_MONEYHELPMSG, nil, nil, nil, nil, 1);
+					</OnEnter>
+					<OnLeave>
+						GameTooltip:Hide();
+					</OnLeave>
+				</Scripts>
+			</CheckButton>
+			<CheckButton name="$parentTotal" inherits="UICheckButtonTemplate">
+		        <Size>
+			        <AbsDimension x="26" y="26"/>
+		        </Size>
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="$parentMoney" relativePoint="BOTTOMLEFT">
+						<Offset>
+							<AbsDimension x="0" y="0"/>
+						</Offset>
+					</Anchor>
+				</Anchors>
+				<Layers>
+					<Layer level="ARTWORK">
+						<FontString name="$parentText" text="EASYMAIL_CONFIG_TOTAL" inherits="GameFontHighlight">
+							<Anchors>
+								<Anchor point="LEFT" relativePoint="RIGHT">
+									<Offset>
+										<AbsDimension x="0" y="1"/>
+									</Offset>
+								</Anchor>
+							</Anchors>
+						</FontString>
+					</Layer>
+				</Layers>
+				<Scripts>
+					<OnEnter>
+						GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
+						GameTooltip:SetText(EASYMAIL_TOTALHELPMSG, nil, nil, nil, nil, 1);
+					</OnEnter>
+					<OnLeave>
+						GameTooltip:Hide();
+					</OnLeave>
+				</Scripts>
+			</CheckButton>
+			<CheckButton name="$parent_L_MoveHistory" inherits="UICheckButtonTemplate">
+		        <Size>
+			        <AbsDimension x="26" y="26"/>
+		        </Size>
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="$parentTotal" relativePoint="BOTTOMLEFT">
+						<Offset>
+							<AbsDimension x="0" y="0"/>
+						</Offset>
+					</Anchor>
+				</Anchors>
+				<Layers>
+					<Layer level="ARTWORK">
+						<FontString name="$parentText" text="EASYMAIL_L_OptMoveHFrame" inherits="GameFontHighlight">
+							<Anchors>
+								<Anchor point="LEFT" relativePoint="RIGHT">
+									<Offset>
+										<AbsDimension x="0" y="1"/>
+									</Offset>
+								</Anchor>
+							</Anchors>
+						</FontString>
+					</Layer>
+				</Layers>
+				<Scripts>
+					<OnEnter>
+						GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
+						GameTooltip:SetText(EASYMAIL_L_OptMoveHFrameTT, nil, nil, nil, nil, 1);
+					</OnEnter>
+					<OnLeave>
+						GameTooltip:Hide();
+					</OnLeave>
+				</Scripts>
+			</CheckButton>
+			<EditBox name="$parentHistLen" autoFocus="false" inherits="InputBoxTemplate" numeric="true" letters="10">
+				<Size>
+					<AbsDimension x="75" y="16"/>
+				</Size>
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="$parent_L_MoveHistory" relativePoint="BOTTOMLEFT">
+						<Offset>
+							<AbsDimension x="9" y="-23"/>
+						</Offset>
+					</Anchor>
+				</Anchors>
+				<Layers>
+					<Layer level="ARTWORK">
+						<FontString name="$parentText" text="EASYMAIL_CONFIG_HISTLEN" inherits="GameFontHighlight">
+							<Anchors>
+								<Anchor point="BOTTOMLEFT" relativePoint="TOPLEFT">
+									<Offset>
+										<AbsDimension x="-4" y="4"/>
+									</Offset>
+								</Anchor>
+							</Anchors>
+						</FontString>
+					</Layer>
+				</Layers>
+				<Scripts>
+					<OnEnter>
+						GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
+						GameTooltip:SetText(EASYMAIL_HISTLENHELPMSG, nil, nil, nil, nil, 1);
+					</OnEnter>
+					<OnLeave>
+						GameTooltip:Hide();
+					</OnLeave>
+				</Scripts>
+				<FontString inherits="ChatFontNormal"/>
+			</EditBox>
+			<!--<Button name="$parentWriteoptions" inherits="UIPanelButtonTemplate" text="EASYMAIL_L_CONFIG_WRITEOPTIONS">
+				<Size>
+					<AbsDimension x="125" y="27"/>
+				</Size>
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="$parent_L_MoveHistory" relativePoint="BOTTOMLEFT">
+						<Offset>
+							<AbsDimension x="90" y="-25"/>
+						</Offset>
+					</Anchor>
+				</Anchors>
+				<Layers>
+					<Layer level="ARTWORK">
+						<FontString name="$parentText" text="EASYMAIL_L_CONFIG_WRITEOPTIONST" inherits="GameFontHighlight">
+							<Anchors>
+								<Anchor point="BOTTOMLEFT" relativePoint="TOPLEFT">
+									<Offset>
+										<AbsDimension x="-50" y="2"/>
+									</Offset>
+								</Anchor>
+							</Anchors>
+						</FontString>
+					</Layer>
+				</Layers>
+				<Scripts>
+					<OnClick>
+						EasyMail.OptionsOkay();
+						EasyMail.OptionsRefresh();
+						PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON);
+					</OnClick>
+					<OnEnter>
+						GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
+						GameTooltip:SetText(EASYMAIL_L_CONFIG_WRITEOPTIONSTT, nil, nil, nil, nil, 1);
+					</OnEnter>
+					<OnLeave>
+						GameTooltip:Hide();
+					</OnLeave>
+				</Scripts>
+			</Button>-->
+		</Frames>
+	</Frame>
+
+</Ui>
