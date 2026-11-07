@@ -114,7 +114,9 @@ StaticPopupDialogs["EASYMAIL_ADDNAME"] = {
     button1 = ACCEPT,
     button2 = CANCEL,
     hasEditBox = 1,
-    maxLetters = 12,
+    -- WoW Forever names are a 12 letter name plus an optional space and 12 letter surname
+    maxLetters = (EasyMail.isForever and 25) or 12,
+    editBoxWidth = (EasyMail.isForever and 200) or nil,
     OnAccept = function(self)
         local text = self:GetEditBox():GetText();
         EasyMail.SaveAddressee(text, 2);
@@ -344,7 +346,12 @@ function EasyMail.OnEvent(self, event, ...)
             return
         end
 
-        curPlayer = UnitName("player");
+        -- Include the surname on WoW Forever so the player's own entry matches what is typed in mail
+        if (NameUtil and NameUtil.GetUnmodifiedUnitFullName) then
+            curPlayer = NameUtil.GetUnmodifiedUnitFullName("player");
+        else
+            curPlayer = UnitName("player");
+        end
         curRealm = GetRealmName();
         curFaction = UnitFactionGroup("player");
 
@@ -2362,21 +2369,32 @@ end
 ---------------------------------------------------
 -- EasyMail.NameCase
 -- Force first letter of player name to uppercase, lower case the rest
+-- Each space-separated part is cased separately (WoW Forever names can have a surname)
 ---------------------------------------------------
 function EasyMail.NameCase(instr)
     if (not strfind("koKRzhCNzhTW", GetLocale())) then
-        local ch = strbyte(strsub(instr, 1, 1));
-        local pos = 1;
+        local parts = {strsplit(" ", instr)};
 
-        if (ch >= 240) then
-            pos = 4;
-        elseif (ch >= 224) then
-            pos = 3;
-        elseif (ch >= 192) then
-            pos = 2;
+        for t = 1, #parts do
+            local part = parts[t];
+
+            if (part ~= "") then
+                local ch = strbyte(strsub(part, 1, 1));
+                local pos = 1;
+
+                if (ch >= 240) then
+                    pos = 4;
+                elseif (ch >= 224) then
+                    pos = 3;
+                elseif (ch >= 192) then
+                    pos = 2;
+                end
+
+                parts[t] = strupper(strsub(part, 1, pos)) .. strlower(strsub(part, pos + 1));
+            end
         end
 
-        return strupper(strsub(instr, 1, pos)) .. strlower(strsub(instr, pos + 1));
+        return table.concat(parts, " ");
     end
 
     return instr;
